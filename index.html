@@ -23,6 +23,42 @@
             margin: 0 auto;
         }
 
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #ff9500;
+        }
+
+        .tab.active {
+            color: #ff9500;
+            border-bottom-color: #ff9500;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -39,6 +75,10 @@
             font-weight: bold;
             border: none;
             cursor: pointer;
+        }
+
+        .play-button:hover {
+            background: #e68600;
         }
 
         .stats {
@@ -155,9 +195,94 @@
             margin-bottom: 10px;
         }
 
+        /* Song Selection Styles */
+        .song-selection {
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #ff9500;
+        }
+
+        .album-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-button {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .filter-button:hover {
+            border-color: #ff9500;
+        }
+
+        .filter-button.active {
+            background: #ff9500;
+            color: white;
+            border-color: #ff9500;
+        }
+
+        .song-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .song-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .song-card:hover {
+            border-color: #ff9500;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .song-card-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .song-card-album {
+            font-size: 0.9em;
+            color: #666;
+        }
+
         @media (max-width: 900px) {
             .lyrics-display {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .song-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
         }
 
@@ -165,32 +290,68 @@
             .lyrics-display {
                 grid-template-columns: 1fr;
             }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+            }
+            
+            .song-list {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="top-bar">
-            <button class="play-button" onclick="newSong()">PLAY QUIZ</button>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-label">SCORE</div>
-                    <div class="stat-value" id="score">0/0</div>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('random')">Random Song</button>
+            <button class="tab" onclick="switchTab('select')">Choose Song</button>
+        </div>
+
+        <!-- Random Song Tab -->
+        <div id="randomTab" class="tab-content active">
+            <div class="top-bar">
+                <button class="play-button" onclick="newSong()">PLAY QUIZ</button>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-label">SCORE</div>
+                        <div class="stat-value" id="score">0/0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">TIMER</div>
+                        <div class="stat-value" id="timer">00:00</div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">TIMER</div>
-                    <div class="stat-value" id="timer">00:00</div>
-                </div>
+            </div>
+
+            <div id="message"></div>
+
+            <div class="input-section">
+                <input type="text" id="guessInput" placeholder="Type a word..." autocomplete="off">
+            </div>
+
+            <div class="lyrics-display" id="lyricsDisplay">
             </div>
         </div>
 
-        <div id="message"></div>
-
-        <div class="input-section">
-            <input type="text" id="guessInput" placeholder="Type a word..." autocomplete="off">
-        </div>
-
-        <div class="lyrics-display" id="lyricsDisplay">
+        <!-- Select Song Tab -->
+        <div id="selectTab" class="tab-content">
+            <div class="song-selection">
+                <input type="text" 
+                       id="searchBox" 
+                       class="search-box" 
+                       placeholder="Search for a song or album..."
+                       oninput="filterSongs()">
+                
+                <div class="album-filter" id="albumFilter"></div>
+                
+                <div class="song-list" id="songList"></div>
+            </div>
         </div>
     </div>
 
@@ -205,11 +366,108 @@
         let startTime = null;
         let timerInterval = null;
         const WORDS_PER_COLUMN = 30;
+        let selectedAlbum = 'all';
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.getElementById('randomTab').classList.remove('active');
+            document.getElementById('selectTab').classList.remove('active');
+
+            if (tabName === 'random') {
+                document.getElementById('randomTab').classList.add('active');
+            } else {
+                document.getElementById('selectTab').classList.add('active');
+                initializeSongSelection();
+            }
+        }
+
+        // Initialize song selection tab
+        function initializeSongSelection() {
+            // Get unique albums
+            const albums = ['all', ...new Set(songs.map(s => s.album))];
+            
+            // Create album filter buttons
+            const filterContainer = document.getElementById('albumFilter');
+            filterContainer.innerHTML = albums.map(album => 
+                `<button class="filter-button ${album === 'all' ? 'active' : ''}" 
+                         onclick="filterByAlbum('${album}')">${album === 'all' ? 'All Albums' : album}</button>`
+            ).join('');
+            
+            // Display all songs initially
+            displaySongList();
+        }
+
+        function filterByAlbum(album) {
+            selectedAlbum = album;
+            
+            // Update button states
+            const buttons = document.querySelectorAll('.filter-button');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === (album === 'all' ? 'All Albums' : album)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            displaySongList();
+        }
+
+        function filterSongs() {
+            displaySongList();
+        }
+
+        function displaySongList() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const songListContainer = document.getElementById('songList');
+            
+            let filteredSongs = songs;
+            
+            // Filter by album
+            if (selectedAlbum !== 'all') {
+                filteredSongs = filteredSongs.filter(s => s.album === selectedAlbum);
+            }
+            
+            // Filter by search term
+            if (searchTerm) {
+                filteredSongs = filteredSongs.filter(s => 
+                    s.name.toLowerCase().includes(searchTerm) || 
+                    s.album.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Display songs
+            songListContainer.innerHTML = filteredSongs.map((song, index) => 
+                `<div class="song-card" onclick="selectSong(${songs.indexOf(song)})">
+                    <div class="song-card-title">${song.name}</div>
+                    <div class="song-card-album">${song.album}</div>
+                </div>`
+            ).join('');
+        }
+
+        function selectSong(index) {
+            currentSong = songs[index];
+            
+            // Switch to random tab to play
+            document.querySelectorAll('.tab')[0].click();
+            
+            // Start the game with selected song
+            startGame();
+        }
 
         function newSong() {
             if (songs.length === 0) return;
             
             currentSong = songs[Math.floor(Math.random() * songs.length)];
+            startGame();
+        }
+
+        function startGame() {
             revealedWords = new Set();
             startTime = Date.now();
             
